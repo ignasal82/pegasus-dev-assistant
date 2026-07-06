@@ -1,0 +1,3 @@
+# Markdown y documentación en UTF-8
+*.md text eol=lf encoding=utf-8
+*.pdf binary
