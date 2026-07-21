@@ -1,8 +1,8 @@
 # Pegasus Dev Assistant
 
-Guía práctica del prototipo **RAG local** (Python + OpenAI + Chroma): cómo
-ejecutar el proyecto de punta a punta y cómo está organizada la batería de
-pruebas.
+Prototipo **RAG local** (Python + OpenAI + Chroma) para responder preguntas
+sobre la documentación interna de Santo Pegasus / Agendio, con tres formas de
+uso: **API HTTP**, **front-end web** y **consola interactiva**.
 
 La integración con OCI se conserva como trabajo futuro, pero **no forma parte
 del alcance activo**.
@@ -10,12 +10,15 @@ del alcance activo**.
 ## Requisitos
 
 - Python 3.11 o superior (probado con 3.12).
-- Una API key de OpenAI (solo para ingestión, chat y evaluación reales).
+- Node.js 22+ (solo para el front-end).
+- Una API key de OpenAI (para ingestión, chat y evaluación reales).
 - PowerShell en Windows (los comandos usan esa sintaxis).
 
-## Cómo ejecutar el proyecto
+## Preparación común (obligatoria)
 
-Todos los comandos se lanzan desde la raíz del repositorio.
+Todas las formas de uso comparten el mismo motor RAG, así que primero hay que
+preparar el entorno, la clave y el índice. Todos los comandos se lanzan desde la
+raíz del repositorio.
 
 ### 1. Instalar el entorno
 
@@ -48,17 +51,66 @@ arquitectura, front-end, onboarding) en un índice Chroma persistente bajo
 `rag/data/chroma/` (ignorado por Git). Para reconstruirlo desde cero usá
 `python -m rag.ingest --rebuild` (repite embeddings, evitá hacerlo sin motivo).
 
-### 4. Chatear con el agente
+---
+
+## 1. Desplegar la API
+
+La API (FastAPI) vive en `api-agente/`, un repositorio Git independiente que
+depende del motor RAG de este proyecto padre.
 
 ```powershell
-.\.venv\Scripts\python.exe -m rag.chat "¿Cuáles son las core hours del equipo?"
+cd api-agente
+..\.venv\Scripts\python.exe -m pip install -e .. -e ".[dev]"
+..\.venv\Scripts\python.exe -m uvicorn agent_api.main:app --host 127.0.0.1 --port 8000
 ```
 
-Recupera los fragmentos top-k, responde con OpenAI y muestra las fuentes
-consultadas. Sin argumento entra en modo interactivo.
+- Raíz (redirige a la doc): <http://127.0.0.1:8000>
+- Documentación Swagger: <http://127.0.0.1:8000/docs>
+- Health check: <http://127.0.0.1:8000/health>
 
-Para una sesión de conversación con memoria y comandos utilitarios, usá la
-consola interactiva:
+Endpoints principales:
+
+| Método | Ruta | Para qué |
+|--------|------|----------|
+| `GET` | `/health` | Estado de API key, índice y prompt (sin exponer secretos) |
+| `GET` | `/config` | Modelos y `top_k` públicos |
+| `POST` | `/chat` | Pregunta al agente; devuelve `session_id` y fuentes |
+| `DELETE` | `/sessions/{id}` | Limpia la memoria de esa conversación |
+
+Detalle completo (contratos, CORS, sesiones) en `api-agente/README.md`.
+
+---
+
+## 2. Desplegar el front-end
+
+El front-end (Angular 21 + Tailwind CSS 4) vive en `frontend-agente/`, otro
+repositorio Git independiente. **Requiere la API corriendo** (sección 1), ya que
+el servidor de desarrollo proxya `/api/*` hacia `http://127.0.0.1:8000`.
+
+```powershell
+cd frontend-agente
+npm install
+npm start
+```
+
+Abre <http://localhost:4200>. El proxy (`proxy.conf.json`) evita problemas de
+CORS en local. Interfaz de chat con memoria de conversación, indicador de estado
+de la API y botón de nueva conversación.
+
+Build de producción:
+
+```powershell
+npm run build   # artefactos en dist/
+```
+
+Detalle completo en `frontend-agente/README.md`.
+
+---
+
+## 3. Desplegar solo la consola
+
+Si no necesitás API ni front-end, podés conversar directamente por terminal.
+Solo requiere la preparación común (entorno, `.env` e índice).
 
 ```powershell
 .\.venv\Scripts\python.exe -m rag.console
@@ -68,24 +120,54 @@ Mantiene el hilo de la conversación (últimos 6 intercambios) y acepta comandos
 `/ayuda`, `/fuentes` (detalle de fragmentos), `/topk N`, `/historial`,
 `/limpiar` y `/salir`.
 
-### 5. Evaluar las preguntas del challenge
+Para una sola pregunta sin sesión interactiva:
+
+```powershell
+.\.venv\Scripts\python.exe -m rag.chat "¿Cuáles son las core hours del equipo?"
+```
+
+También podés evaluar las 10 preguntas del challenge (más 3 negativas):
 
 ```powershell
 .\.venv\Scripts\python.exe -m rag.evaluate --negativas --salida validacion-rag-local.md
 ```
 
-Corre las 10 preguntas (más las 3 negativas con `--negativas`) y escribe un
-registro en Markdown. **Criterio de aceptación:** al menos **9/10** OK y ninguna
-respuesta inventada. Si una falla, corregí el documento fuente en
-`doc/conocimiento/`, reconstruí el índice y repetí.
-
+**Criterio de aceptación:** al menos **9/10** OK y ninguna respuesta inventada.
 El registro vigente está versionado como evidencia en
 [validacion-rag-local.md](./validacion-rag-local.md) (10/10 + 3 negativas OK).
 
-## Método de pruebas
+---
 
-La suite vive en `tests/` y se ejecuta con `pytest`. Está diseñada en dos
-niveles para que el desarrollo diario **no dependa de la red ni de la API key**.
+## 4. Ejecutar los tests unitarios
+
+La suite del motor RAG vive en `tests/` y se ejecuta con `pytest`. Está diseñada
+en dos niveles para que el desarrollo diario **no dependa de la red ni de la API
+key**.
+
+```powershell
+# Suite rápida por defecto (sin red, excluye integración)
+.\.venv\Scripts\python.exe -m pytest
+
+# Solo la prueba de integración (requiere .env + python -m rag.ingest antes)
+.\.venv\Scripts\python.exe -m pytest -m integration
+
+# Absolutamente todo
+.\.venv\Scripts\python.exe -m pytest -m "integration or not integration"
+
+# Un archivo o una prueba puntual
+.\.venv\Scripts\python.exe -m pytest tests/test_retrieve.py
+.\.venv\Scripts\python.exe -m pytest tests/test_retrieve.py::test_retrieve_respeta_top_k
+
+# Salida detallada
+.\.venv\Scripts\python.exe -m pytest -v
+```
+
+Para los tests de la API:
+
+```powershell
+cd api-agente
+..\.venv\Scripts\python.exe -m pytest -q
+```
 
 ### Filosofía
 
@@ -129,25 +211,7 @@ markers = [
 La prueba de integración además se auto-omite (`skipif`) si falta la API key o
 el índice Chroma, así que nunca falla por entorno incompleto.
 
-### Cómo correr las pruebas
-
-```powershell
-# Suite rápida por defecto (sin red, excluye integración)
-.\.venv\Scripts\python.exe -m pytest
-
-# Solo la prueba de integración (requiere .env + python -m rag.ingest antes)
-.\.venv\Scripts\python.exe -m pytest -m integration
-
-# Absolutamente todo
-.\.venv\Scripts\python.exe -m pytest -m "integration or not integration"
-
-# Un archivo o una prueba puntual
-.\.venv\Scripts\python.exe -m pytest tests/test_retrieve.py
-.\.venv\Scripts\python.exe -m pytest tests/test_retrieve.py::test_retrieve_respeta_top_k
-
-# Salida detallada
-.\.venv\Scripts\python.exe -m pytest -v
-```
+---
 
 ## Errores comunes
 
@@ -157,6 +221,7 @@ el índice Chroma, así que nunca falla por entorno incompleto.
 | `No existe el índice local` | Ejecutar `python -m rag.ingest` |
 | `python` no encontrado | Usar `.\.venv\Scripts\python.exe` o reabrir la terminal |
 | La prueba de integración se omite | Faltan `.env` o el índice; correr `rag.ingest` primero |
+| El front-end no responde | Verificá que la API esté corriendo en el puerto 8000 |
 
 ## Prompt del sistema
 
@@ -186,6 +251,8 @@ Estos documentos quedan abiertos, sin ejecutarse todavía (también locales):
 ## Referencias del repo
 
 - README técnico del RAG: `rag/README.md`
+- README de la API: `api-agente/README.md`
+- README del front-end: `frontend-agente/README.md`
 - Agente: `doc/metadatos/agente.md`
 - KB: `doc/conocimiento/`
 - Validación previa (docs): `doc/control/validacion-preguntas.md`
