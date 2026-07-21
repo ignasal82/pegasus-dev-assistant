@@ -23,6 +23,20 @@ def test_retrieve_falla_sin_indice(monkeypatch, tmp_path):
         retrieve.retrieve("pregunta")
 
 
+def test_retrieve_falla_sin_api_key(monkeypatch, tmp_path):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    chroma = tmp_path / "chroma"
+    chroma.mkdir()
+    monkeypatch.setattr(retrieve.config, "CHROMA_DIR", chroma)
+
+    fake_collection = MagicMock()
+    with (
+        patch("rag.retrieve._get_collection", return_value=fake_collection),
+        pytest.raises(RuntimeError, match="OPENAI_API_KEY"),
+    ):
+        retrieve.retrieve("pregunta")
+
+
 def test_retrieve_mapea_resultados(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
     settings = config.load_settings()
@@ -43,6 +57,31 @@ def test_retrieve_mapea_resultados(monkeypatch):
     assert len(results) == 1
     assert results[0].source == "doc/conocimiento/faq.md"
     assert results[0].heading == "Horarios"
+    assert results[0].distance == pytest.approx(0.12)
+    fake_collection.query.assert_called_once()
+    assert fake_collection.query.call_args.kwargs["n_results"] == settings.top_k
+
+
+def test_retrieve_respeta_top_k(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+    monkeypatch.setenv("RAG_TOP_K", "2")
+    settings = config.load_settings()
+
+    fake_collection = MagicMock()
+    fake_collection.query.return_value = {
+        "documents": [["a", "b"]],
+        "metadatas": [[{"source": "a.md", "heading": ""}, {"source": "b.md", "heading": ""}]],
+        "distances": [[0.1, 0.2]],
+    }
+
+    with (
+        patch("rag.retrieve._get_collection", return_value=fake_collection),
+        patch("rag.retrieve.OpenAI", return_value=_fake_openai_embeddings()),
+    ):
+        results = retrieve.retrieve("pregunta", settings)
+
+    assert len(results) == 2
+    assert fake_collection.query.call_args.kwargs["n_results"] == 2
 
 
 def test_answer_usa_contexto_y_devuelve_fuentes(monkeypatch):
@@ -72,8 +111,34 @@ def test_answer_usa_contexto_y_devuelve_fuentes(monkeypatch):
     assert "10:00" in text
     assert sources[0].source == "doc/conocimiento/faq.md"
 
-    # El mensaje enviado al modelo debe contener el contexto recuperado
     sent_messages = fake_chat_client.chat.completions.create.call_args.kwargs["messages"]
     user_message = sent_messages[1]["content"]
     assert "Core hours: 10:00 a 17:00." in user_message
     assert sent_messages[0]["role"] == "system"
+
+
+def test_answer_maneja_contenido_vacio_del_modelo(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+    settings = config.load_settings()
+    retrieved = [
+        retrieve.Retrieved(
+            text="dato",
+            source="doc/conocimiento/faq.md",
+            heading="",
+            distance=0.1,
+        )
+    ]
+
+    fake_chat_client = MagicMock()
+    completion = MagicMock()
+    completion.choices = [MagicMock(message=MagicMock(content=None))]
+    fake_chat_client.chat.completions.create.return_value = completion
+
+    with (
+        patch("rag.chat.retrieve", return_value=retrieved),
+        patch("rag.chat.OpenAI", return_value=fake_chat_client),
+    ):
+        text, sources = chat.answer("pregunta", settings)
+
+    assert text == ""
+    assert sources == retrieved
