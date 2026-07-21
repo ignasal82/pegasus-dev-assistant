@@ -26,6 +26,7 @@ Copy-Item .env.example .env
 |---------|----------|
 | `python -m rag.ingest` | Indexa los 5 Markdown en Chroma (fase 2) |
 | `python -m rag.chat` | Chat interactivo con fuentes (fase 3) |
+| `python -m rag.console` | Consola con memoria de conversación y comandos (`/ayuda`) |
 | `python -m rag.evaluate` | Corre las 10 preguntas del challenge (fase 4) |
 | `pytest` | Pruebas unitarias e interacción CLI (sin red) |
 | `pytest -m integration` | Smoke real contra OpenAI + índice local |
@@ -41,6 +42,7 @@ rag/
 ├── prompt-sistema.md  # instrucciones del sistema del agente
 ├── prompts.py     # carga de prompt-sistema.md (fase 3)
 ├── chat.py        # CLI de chat (fase 3)
+├── console.py     # consola interactiva con memoria y comandos
 ├── evaluate.py    # batería de 10 preguntas (fase 4)
 └── data/chroma/   # índice persistente (ignorado por Git)
 ```

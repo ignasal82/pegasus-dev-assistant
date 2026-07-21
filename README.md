@@ -57,6 +57,17 @@ arquitectura, front-end, onboarding) en un índice Chroma persistente bajo
 Recupera los fragmentos top-k, responde con OpenAI y muestra las fuentes
 consultadas. Sin argumento entra en modo interactivo.
 
+Para una sesión de conversación con memoria y comandos utilitarios, usá la
+consola interactiva:
+
+```powershell
+.\.venv\Scripts\python.exe -m rag.console
+```
+
+Mantiene el hilo de la conversación (últimos 6 intercambios) y acepta comandos:
+`/ayuda`, `/fuentes` (detalle de fragmentos), `/topk N`, `/historial`,
+`/limpiar` y `/salir`.
+
 ### 5. Evaluar las preguntas del challenge
 
 ```powershell
@@ -97,6 +108,7 @@ niveles para que el desarrollo diario **no dependa de la red ni de la API key**.
 | Prompt | `test_prompts.py` | carga, fallback y armado del mensaje de usuario | No |
 | Evaluación | `test_evaluation.py` | conteo OK, casos negativos, sin secretos | No |
 | Interacción CLI | `test_agent_interaction.py` | impresión de respuesta y deduplicación de fuentes | No |
+| Consola | `test_console.py` | memoria, comandos, top-k y manejo de errores | No |
 | Fixtures | `conftest.py` | `sample_retrieved` y `agent_reply` compartidas | — |
 | Integración | `test_agent_integration.py` | smoke real contra OpenAI + Chroma | **Sí** |
 
