@@ -1,4 +1,4 @@
-"""Carga del prompt de sistema desde plan-impl/prompt-sistema.md."""
+"""Carga del prompt de sistema desde rag/prompt-sistema.md."""
 
 from __future__ import annotations
 
@@ -18,8 +18,8 @@ _FALLBACK_PROMPT = (
 def load_system_prompt() -> str:
     """Extrae el primer bloque ```text del archivo de prompt.
 
-    Si el archivo no existe (por ejemplo, en otra máquina sin plan-impl/),
-    usa una variante corta embebida para no bloquear el chat.
+    Si el archivo no existe, usa una variante corta embebida para no
+    bloquear el chat.
     """
     if not config.PROMPT_FILE.is_file():
         return _FALLBACK_PROMPT

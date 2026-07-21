@@ -38,6 +38,7 @@ rag/
 ├── chunking.py    # división por encabezados (fase 2)
 ├── ingest.py      # embeddings + Chroma (fase 2)
 ├── retrieve.py    # búsqueda top-k (fase 3)
+├── prompt-sistema.md  # instrucciones del sistema del agente
 ├── prompts.py     # carga de prompt-sistema.md (fase 3)
 ├── chat.py        # CLI de chat (fase 3)
 ├── evaluate.py    # batería de 10 preguntas (fase 4)

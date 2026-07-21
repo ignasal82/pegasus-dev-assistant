@@ -17,7 +17,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(REPO_ROOT / ".env")
 
 KNOWLEDGE_DIR = REPO_ROOT / "doc" / "conocimiento"
-PROMPT_FILE = REPO_ROOT / "plan-impl" / "prompt-sistema.md"
+PROMPT_FILE = REPO_ROOT / "rag" / "prompt-sistema.md"
 CHROMA_DIR = REPO_ROOT / "rag" / "data" / "chroma"
 COLLECTION_NAME = "pegasus-conocimiento"
 
