@@ -47,3 +47,34 @@ rag/
 
 Solo los 5 `.md` temáticos de `doc/conocimiento/` (FAQ, SRE, arquitectura,
 front-end, onboarding). Se excluyen `README.md` y los PDF.
+
+## Flujo completo (con API key configurada)
+
+```powershell
+# 1. Indexar la base de conocimiento (una sola vez; usa embeddings de OpenAI)
+.\.venv\Scripts\python.exe -m rag.ingest
+
+# 2. Probar el chat
+.\.venv\Scripts\python.exe -m rag.chat "¿Cuáles son las core hours del equipo?"
+
+# 3. Correr la evaluación del challenge (10 preguntas + registro)
+.\.venv\Scripts\python.exe -m rag.evaluate --negativas --salida validacion-rag-local.md
+```
+
+Criterio de aceptación: al menos **9/10** preguntas OK y ninguna respuesta
+inventada. Si una falla, corregir el documento fuente en `doc/conocimiento/`,
+reconstruir el índice con `python -m rag.ingest --rebuild` y repetir.
+
+## Costos
+
+La KB completa son ~37 KB de texto: la ingestión con `text-embedding-3-small`
+cuesta fracciones de centavo, y cada pregunta con `gpt-4o-mini` es igualmente
+barata. Evitá `--rebuild` innecesarios para no repetir embeddings.
+
+## Errores comunes
+
+| Error | Solución |
+|-------|----------|
+| `Falta OPENAI_API_KEY` | Copiar `.env.example` a `.env` y completar la clave |
+| `No existe el índice local` | Ejecutar `python -m rag.ingest` |
+| `python` no encontrado | Usar `.\.venv\Scripts\python.exe` o reabrir la terminal |
