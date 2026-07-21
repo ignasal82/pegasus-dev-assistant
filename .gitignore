@@ -40,3 +40,6 @@ build/
 # Documentación local del proyecto
 doc/INSTRUCCIONES-PASO-A-PASO.md
 doc-politicas/
+
+# Repositorios independientes locales
+api-agente/
