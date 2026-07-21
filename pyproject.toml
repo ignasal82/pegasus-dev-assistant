@@ -17,3 +17,7 @@ packages = ["rag"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "-m \"not integration\""
+markers = [
+    "integration: prueba real contra OpenAI e índice local (requiere .env e ingest)",
+]
