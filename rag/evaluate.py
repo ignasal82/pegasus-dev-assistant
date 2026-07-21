@@ -75,7 +75,7 @@ def run(include_negative: bool = False, output: Path | None = None) -> int:
         ok_count += passed and i <= len(CASES)
         status = "OK" if passed else "REVISAR"
         sources = ", ".join(sorted({r.source for r in retrieved}))
-        print(f"    → {status}")
+        print(f"    -> {status}")
         summary = " ".join(text.split())
         rows.append(f"| {i} | {case.question} | {status} | {sources} | {summary} |")
 
