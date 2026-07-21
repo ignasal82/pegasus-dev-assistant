@@ -1,0 +1,31 @@
+<form
+  class="border-t border-slate-800 bg-slate-900/80 px-4 py-4 backdrop-blur sm:px-8"
+  (ngSubmit)="submit()"
+>
+  <div class="flex items-end gap-3">
+    <textarea
+      name="question"
+      rows="1"
+      [ngModel]="draft()"
+      (ngModelChange)="draft.set($event)"
+      (keydown)="onKeydown($event)"
+      [disabled]="disabled()"
+      placeholder="Escribí tu pregunta… (Enter envía, Shift+Enter agrega línea)"
+      class="max-h-40 min-h-[2.75rem] flex-1 resize-y rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-pegasus-500 focus:ring-2 focus:ring-pegasus-500/30 disabled:opacity-50"
+    ></textarea>
+
+    <button
+      type="submit"
+      [disabled]="disabled() || !draft().trim()"
+      class="inline-flex h-11 items-center gap-2 rounded-xl bg-pegasus-600 px-5 text-sm font-semibold text-white shadow-lg shadow-pegasus-900/40 transition hover:bg-pegasus-500 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      Enviar
+      <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z" />
+      </svg>
+    </button>
+  </div>
+  <p class="mt-2 text-center text-[11px] text-slate-500">
+    Las respuestas provienen únicamente de la documentación interna indexada.
+  </p>
+</form>

@@ -1,0 +1,41 @@
+<header class="flex items-center justify-between gap-4 border-b border-slate-800 bg-slate-900/80 px-6 py-4 backdrop-blur">
+  <div class="flex items-center gap-3">
+    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-pegasus-600 text-lg font-bold text-white shadow-lg shadow-pegasus-900/40">
+      P
+    </div>
+    <div>
+      <h1 class="text-base font-semibold text-slate-100">Pegasus Dev Assistant</h1>
+      <p class="text-xs text-slate-400">Documentación interna de Santo Pegasus / Agendio</p>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3">
+    @if (health(); as h) {
+      <span
+        class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
+        [class]="h.status === 'ready' ? 'bg-emerald-950 text-emerald-300' : 'bg-amber-950 text-amber-300'"
+      >
+        <span
+          class="h-2 w-2 rounded-full"
+          [class]="h.status === 'ready' ? 'bg-emerald-400' : 'bg-amber-400'"
+        ></span>
+        {{ h.status === 'ready' ? 'API lista' : 'API degradada' }}
+      </span>
+    } @else {
+      <span class="inline-flex items-center gap-2 rounded-full bg-rose-950 px-3 py-1 text-xs font-medium text-rose-300">
+        <span class="h-2 w-2 rounded-full bg-rose-400"></span>
+        API sin conexión
+      </span>
+    }
+
+    @if (hasConversation()) {
+      <button
+        type="button"
+        (click)="newConversation.emit()"
+        class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:border-pegasus-500 hover:text-pegasus-300"
+      >
+        Nueva conversación
+      </button>
+    }
+  </div>
+</header>

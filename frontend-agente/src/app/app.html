@@ -1,0 +1,11 @@
+<div class="mx-auto flex h-dvh max-w-4xl flex-col">
+  <app-chat-header
+    [health]="chat.health()"
+    [hasConversation]="chat.hasConversation()"
+    (newConversation)="onNewConversation()"
+  />
+
+  <app-chat-messages [messages]="chat.messages()" [loading]="chat.loading()" />
+
+  <app-chat-input [disabled]="chat.loading()" (send)="onSend($event)" />
+</div>

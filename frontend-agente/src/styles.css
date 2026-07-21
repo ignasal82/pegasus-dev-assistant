@@ -1,0 +1,24 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-pegasus-50: #eef7ff;
+  --color-pegasus-100: #d9edff;
+  --color-pegasus-200: #bce0ff;
+  --color-pegasus-300: #8ecdff;
+  --color-pegasus-400: #59b0ff;
+  --color-pegasus-500: #338eff;
+  --color-pegasus-600: #1b6ef5;
+  --color-pegasus-700: #1457e1;
+  --color-pegasus-800: #1747b6;
+  --color-pegasus-900: #193f8f;
+  --color-pegasus-950: #142857;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-950 text-slate-100 antialiased;
+}

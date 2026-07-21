@@ -55,8 +55,8 @@ arquitectura, front-end, onboarding) en un índice Chroma persistente bajo
 
 ## 1. Desplegar la API
 
-La API (FastAPI) vive en `api-agente/`, un repositorio Git independiente que
-depende del motor RAG de este proyecto padre.
+La API (FastAPI) vive en `api-agente/` y depende del motor RAG de este
+proyecto.
 
 ```powershell
 cd api-agente
@@ -83,9 +83,9 @@ Detalle completo (contratos, CORS, sesiones) en `api-agente/README.md`.
 
 ## 2. Desplegar el front-end
 
-El front-end (Angular 21 + Tailwind CSS 4) vive en `frontend-agente/`, otro
-repositorio Git independiente. **Requiere la API corriendo** (sección 1), ya que
-el servidor de desarrollo proxya `/api/*` hacia `http://127.0.0.1:8000`.
+El front-end (Angular 21 + Tailwind CSS 4) vive en `frontend-agente/`.
+**Requiere la API corriendo** (sección 1), ya que el servidor de desarrollo
+proxya `/api/*` hacia `http://127.0.0.1:8000`.
 
 ```powershell
 cd frontend-agente
