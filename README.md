@@ -79,6 +79,8 @@ Endpoints principales:
 
 Detalle completo (contratos, CORS, sesiones) en `api-agente/README.md`.
 
+<img src="evidence/evidencia_despliegue_api.png" alt="Evidencia: API en ejecución con Uvicorn en el puerto 8000" width="800" />
+
 ---
 
 ## 2. Desplegar el front-end
@@ -96,6 +98,10 @@ npm start
 Abre <http://localhost:4200>. El proxy (`proxy.conf.json`) evita problemas de
 CORS en local. Interfaz de chat con memoria de conversación, indicador de estado
 de la API y botón de nueva conversación.
+
+<img src="evidence/evidencia_despligue_frontend_agente.png" alt="Evidencia: front-end Angular en ejecución en el puerto 4200" width="800" />
+
+<img src="evidence/evidencia_chat_agente.png" alt="Evidencia: chat del agente respondiendo en Pegasus Dev Assistant" width="800" />
 
 Build de producción:
 
